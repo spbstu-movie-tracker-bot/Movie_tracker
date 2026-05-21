@@ -1,0 +1,44 @@
+erDiagram
+    users ||--o{ watchlist : ""
+    users ||--o{ preferences : ""
+    movies ||--o{ watchlist : ""
+
+    users {
+        BIGSERIAL id PK
+        BIGINT telegram_id UK
+        VARCHAR username
+        VARCHAR first_name
+        VARCHAR last_name
+        VARCHAR role
+        TIMESTAMP registered_at
+        BOOLEAN is_active
+    }
+
+    movies {
+        BIGSERIAL id PK
+        INTEGER tmdb_id UK
+        VARCHAR title
+        VARCHAR original_title
+        TEXT overview
+        VARCHAR poster_path
+        DATE release_date
+        DOUBLE vote_average
+        INTEGER runtime
+        TIMESTAMP created_at
+    }
+
+    watchlist {
+        BIGSERIAL id PK
+        BIGINT user_id FK
+        BIGINT movie_id FK
+        TIMESTAMP added_at
+        BOOLEAN watched
+    }
+
+    preferences {
+        BIGSERIAL id PK
+        BIGINT user_id FK
+        VARCHAR pref_type
+        VARCHAR pref_value
+        TIMESTAMP created_at
+    }

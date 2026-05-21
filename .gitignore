@@ -1,0 +1,23 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# Environment
+.env
+
+# SSH keys
+*.pem
+
+# Old deploy file (real workflow is in .github/workflows/)
+deploy.yml
+
+# OS
+.DS_Store
+Thumbs.db

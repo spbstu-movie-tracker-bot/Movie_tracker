@@ -1,0 +1,107 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.asciidoctor.jvm.convert' version '4.0.5'
+}
+
+group = 'com.movietracker'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    asciidoctorExt
+}
+
+ext {
+    snippetsDir = layout.buildDirectory.dir('generated-snippets')
+}
+
+dependencies {
+    // Spring Framework 7 (non-Boot)
+    implementation platform('org.springframework:spring-framework-bom:7.0.0')
+    implementation 'org.springframework:spring-context'
+    implementation 'org.springframework:spring-webflux'
+    implementation 'org.springframework:spring-web'
+    
+    // Spring Security 7
+    implementation platform('org.springframework.security:spring-security-bom:7.0.0')
+    implementation 'org.springframework.security:spring-security-core'
+    implementation 'org.springframework.security:spring-security-config'
+    implementation 'org.springframework.security:spring-security-web'
+    
+    // Netty (HTTP server for WebFlux)
+    implementation 'io.projectreactor.netty:reactor-netty-http:1.2.5'
+    
+    // Jackson JSON
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.0'
+    
+    // jOOQ for database
+    implementation 'org.jooq:jooq:3.20.0'
+    
+    // PostgreSQL
+    implementation 'org.postgresql:postgresql:42.7.4'
+    implementation 'org.postgresql:r2dbc-postgresql:1.0.7.RELEASE'
+    implementation 'io.r2dbc:r2dbc-pool:1.0.2.RELEASE'
+    
+    // RabbitMQ client (direct AMQP, no Spring wrapper)
+    implementation 'com.rabbitmq:amqp-client:5.30.0'
+    
+    // Jakarta annotations for @PostConstruct, @PreDestroy
+    implementation 'jakarta.annotation:jakarta.annotation-api:3.0.0'
+    
+    // Logging
+    implementation 'org.slf4j:slf4j-api:2.0.16'
+    implementation 'ch.qos.logback:logback-classic:1.5.12'
+    
+    // Testing + Spring REST Docs
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.0.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.springframework:spring-test'
+    testImplementation 'io.projectreactor:reactor-test:3.7.6'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-webtestclient:4.0.0'
+    testImplementation 'com.jayway.jsonpath:json-path:2.9.0'
+    testImplementation 'org.hamcrest:hamcrest:3.0'
+    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor:4.0.0'
+}
+
+application {
+    mainClass = 'com.movietracker.Application'
+}
+
+test {
+    useJUnitPlatform()
+    outputs.dir snippetsDir
+}
+
+asciidoctorj {
+    version = '3.0.0'
+}
+
+asciidoctor {
+    configurations 'asciidoctorExt'
+    baseDirFollowsSourceFile()
+    inputs.dir snippetsDir
+    dependsOn test
+}
+
+// Create fat JAR
+tasks.register('fatJar', Jar) {
+    archiveClassifier = 'all'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes 'Main-Class': 'com.movietracker.Application'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    with jar
+}

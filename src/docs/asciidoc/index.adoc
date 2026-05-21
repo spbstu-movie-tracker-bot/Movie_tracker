@@ -1,0 +1,49 @@
+= Movie Tracker API Documentation
+Abbad Mohamed Salem, Mikhail Alekhin, Olga Kozlovskaya
+:doctype: book
+:toc: left
+:toclevels: 2
+:source-highlighter: highlightjs
+
+== Introduction
+
+Movie Tracker — RESTful API on Spring Framework 7 (WebFlux).
+Reactive, non-blocking server on Reactor Netty.
+
+== Healthcheck
+
+Public endpoint, no authentication required.
+
+=== Request
+
+`GET /healthcheck`
+
+=== Response
+
+Returns server status and list of authors.
+
+operation::healthcheck[snippets='http-request,http-response,response-fields']
+
+=== Authors List
+
+operation::healthcheck-authors[snippets='http-response']
+
+== Admin: User List
+
+Admin-only endpoint, requires `ADMIN` role. Returns all registered users.
+
+=== Request
+
+`GET /admin/users`
+
+Header: `Authorization: Bearer <telegramId>:<hash>`
+
+=== Response
+
+operation::admin-users[snippets='http-request,http-response,response-fields']
+
+=== User Roles
+
+Each user has a role: `USER` (default) or `ADMIN`.
+
+operation::admin-users-roles[snippets='http-response']
