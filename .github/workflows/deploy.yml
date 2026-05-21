@@ -1,0 +1,42 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ubuntu
+          key: ${{ secrets.AWS_PRIVATE_KEY }}
+          source: "src,build.gradle,settings.gradle,Dockerfile,docker-compose.yml,.env.example,gradle"
+          target: "~/"
+
+      - name: Deploy with Docker Compose
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ubuntu
+          key: ${{ secrets.AWS_PRIVATE_KEY }}
+          script: |
+            cd ~/
+            # Create .env from example if it doesn't exist
+            if [ ! -f .env ]; then
+              cp .env.example .env
+              echo "WARNING: .env created from example - fill in real values!"
+            fi
+            # Stop any old containers (from any directory)
+            sudo docker rm -f movie-tracker-spring7 movie-tracker-postgres movie-tracker-rabbitmq 2>/dev/null || true
+            sudo docker compose down --remove-orphans || true
+            sudo docker compose up --build -d
