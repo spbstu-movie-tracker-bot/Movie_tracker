@@ -21,7 +21,7 @@ public class HealthcheckControllerDocTest {
 
     @BeforeEach
     void setUp(RestDocumentationContextProvider restDocumentation) {
-        // bind directly to the controller , no full app context needed
+        // bind directly to the controller, no full app context needed
         this.webTestClient = WebTestClient
                 .bindToController(new HealthcheckController())
                 .configureClient()
