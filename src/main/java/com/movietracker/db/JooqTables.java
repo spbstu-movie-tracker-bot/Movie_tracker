@@ -22,8 +22,8 @@ public final class JooqTables {
     public static final Field<String> USERS_FIRST_NAME = DSL.field("first_name", String.class);
     public static final Field<String> USERS_LAST_NAME = DSL.field("last_name", String.class);
     public static final Field<String> USERS_ROLE = DSL.field("role", String.class);
-    public static final Field<LocalDate> USERS_BIRTH_DATE = DSL.field("birth_date", LocalDate.class);
     public static final Field<LocalDateTime> USERS_REGISTERED_AT = DSL.field("registered_at", LocalDateTime.class);
+     public static final Field<LocalDate> USERS_BIRTH_DATE = DSL.field("birth_date", LocalDate.class);
     public static final Field<Boolean> USERS_IS_ACTIVE = DSL.field("is_active", Boolean.class);
 
     // MOVIES table
