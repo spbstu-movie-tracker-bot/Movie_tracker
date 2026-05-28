@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.time.LocalDate;
 
 import java.time.LocalDateTime;
 
@@ -70,6 +71,14 @@ public class UserRepository {
         );
     }
 
+    public Mono<Integer> updateBirthDate(Long userId, LocalDate birthDate) {
+        return Mono.from(
+                dsl.update(USERS)
+                        .set(USERS_BIRTH_DATE, birthDate)
+                        .where(USERS_ID.eq(userId))
+        );
+    }
+
     private AppUser mapToUser(org.jooq.Record record) {
         Object rawTimestamp = record.get(USERS_REGISTERED_AT);
         LocalDateTime registeredAt;
@@ -81,6 +90,15 @@ public class UserRepository {
             registeredAt = LocalDateTime.now();
         }
 
+        Object rawBirthDate = record.get(USERS_BIRTH_DATE);
+        LocalDate birthDate = null;
+        if (rawBirthDate instanceof LocalDate ld) {
+            birthDate = ld;
+        } else if (rawBirthDate instanceof java.sql.Date sd) {
+            birthDate = sd.toLocalDate();
+        }
+
+
         return new AppUser(
                 record.get(USERS_ID),
                 record.get(USERS_TELEGRAM_ID),
@@ -89,6 +107,7 @@ public class UserRepository {
                 record.get(USERS_LAST_NAME),
                 Role.valueOf(record.get(USERS_ROLE)),
                 registeredAt,
+                birthDate,
                 record.get(USERS_IS_ACTIVE)
         );
     }
