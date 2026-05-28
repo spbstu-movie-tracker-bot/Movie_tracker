@@ -15,6 +15,9 @@ import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 
 
 //// Routes commands to appropriate handlers
@@ -30,16 +33,20 @@ public class CommandRouter {
     private final LlmService llmService;
     private final PreferencesService preferencesService;
     private final RecommendationProducer recommendationProducer;
+    private final com.movietracker.service.UserService userService;
 
     public CommandRouter(TelegramBotClient botClient, MovieService movieService,
                          LlmService llmService, PreferencesService preferencesService,
-                         RecommendationProducer recommendationProducer) {
+                         RecommendationProducer recommendationProducer,
+                         com.movietracker.service.UserService userService) {
         this.botClient = botClient;
         this.movieService = movieService;
         this.llmService = llmService;
         this.preferencesService = preferencesService;
         this.recommendationProducer = recommendationProducer;
+        this.userService = userService;
     }
+
 
     public Mono<Void> route(Long chatId, AppUser user, String text) {
         if (text.startsWith("/")) {
@@ -62,10 +69,14 @@ public class CommandRouter {
                 case "/setdirector" -> handleSetPreference(chatId, user, "director", args);
                 case "/preferences", "/prefs" -> handleShowPreferences(chatId, user);
                 case "/clearprefs" -> handleClearPreferences(chatId, user, args);
+                case "/setbirth" -> handleSetBirthDate(chatId, user, args);
+
                 // Discovery commands
+
                 case "/random" -> handleRandom(chatId, user);
                 case "/similar" -> handleSimilar(chatId, user, args);
                 default -> botClient.sendMessage(chatId, "Unknown command. Use /help for available commands.");
+
             };
         }
 
@@ -108,6 +119,7 @@ public class CommandRouter {
                 • 🔍 Search for movies
                 • 📋 Manage your watchlist
                 • ⚙️ Set your preferences (genres, actors, directors)
+                • 🎂 Set your birth date for age-restricted features
                 • 🎬 Get personalized recommendations
                 • 🎲 Discover random movies
                 • 💬 Ask questions about movies (AI-powered)
@@ -136,6 +148,7 @@ public class CommandRouter {
                 /setdirector [directors] - Set favorite directors
                 /preferences - Show your preferences
                 /clearprefs - Clear all preferences
+                /setbirth [DD.MM.YYYY] - Set your birth date
                 
                 <b>🤖 AI Features</b>
                 /recommend - AI recommendations (uses watchlist + preferences)
@@ -340,6 +353,36 @@ public class CommandRouter {
 
         return preferencesService.clearPreferencesByType(user.getId(), cleanType)
                 .then(botClient.sendMessage(chatId, "🗑 " + capitalize(cleanType) + " preferences cleared."));
+    }
+    private Mono<Void> handleSetBirthDate(Long chatId, AppUser user, String dateStr) {
+        if (dateStr.isBlank()) {
+            return botClient.sendMessage(chatId,
+                    "Please provide your birth date in format DD.MM.YYYY\n" +
+                            "Example: <code>/setbirth 15.03.1999</code>");
+        }
+
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+            LocalDate birthDate = LocalDate.parse(dateStr.trim(), formatter);
+
+            // Validate: not in the future
+            if (birthDate.isAfter(LocalDate.now())) {
+                return botClient.sendMessage(chatId, "❌ Birth date cannot be in the future.");
+            }
+
+            // Validate: reasonable age (not older than 150 years)
+            if (birthDate.isBefore(LocalDate.now().minusYears(150))) {
+                return botClient.sendMessage(chatId, "❌ Please enter a valid birth date.");
+            }
+
+            return userService.updateBirthDate(user.getId(), birthDate)
+                    .then(botClient.sendMessage(chatId,
+                            "🎂 Birth date set to: " + birthDate.format(formatter)));
+        } catch (Exception e) {
+            return botClient.sendMessage(chatId,
+                    "❌ Invalid date format. Please use DD.MM.YYYY\n" +
+                            "Example: <code>/setbirth 15.03.1999</code>");
+        }
     }
 
     //  Watchlist Command 
