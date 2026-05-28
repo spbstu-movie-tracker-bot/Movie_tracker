@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 
+import java.time.Period;
 
 //// Routes commands to appropriate handlers
 
@@ -426,7 +427,21 @@ public class CommandRouter {
 
     // ── AI Commands (recommendations routed through RabbitMQ) ─────────
 
-    private Mono<Void> handleRecommend(Long chatId, AppUser user, String args) {
+        private Mono<Void> handleRecommend(Long chatId, AppUser user, String args) {
+        //  only 18+ users can get recommendations
+        if (user.getBirthDate() == null) {
+            return botClient.sendMessage(chatId,
+                    " Please set your birth date first using:\n" +
+                    "<code>/setbirth DD.MM.YYYY</code>\n\n" +
+                    "Recommendations are available for users 18 and older.");
+        }
+
+        int age = Period.between(user.getBirthDate(), LocalDate.now()).getYears();
+        if (age < 18) {
+            return botClient.sendMessage(chatId,
+                    " Sorry, movie recommendations are only available for users 18 years or older.");
+        }
+
         // If user provided a specific request, publish to RabbitMQ with direct text
         if (!args.isBlank()) {
             return botClient.sendMessage(chatId, " Your request has been queued for processing...")

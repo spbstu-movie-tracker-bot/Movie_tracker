@@ -50,3 +50,5 @@ CREATE INDEX IF NOT EXISTS idx_users_telegram_id ON users(telegram_id);
 CREATE INDEX IF NOT EXISTS idx_movies_tmdb_id ON movies(tmdb_id);
 CREATE INDEX IF NOT EXISTS idx_watchlist_user_id ON watchlist(user_id);
 CREATE INDEX IF NOT EXISTS idx_preferences_user_id ON preferences(user_id);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS birth_date DATE;
+
