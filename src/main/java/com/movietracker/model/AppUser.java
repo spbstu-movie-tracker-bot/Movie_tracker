@@ -14,6 +14,7 @@ public class AppUser {
     private String lastName;
     private Role role;
     private LocalDateTime registeredAt;
+    private LocalDate birthDate;
     private Boolean isActive;
 
     public AppUser() {
@@ -22,12 +23,17 @@ public class AppUser {
         this.isActive = true;
     }
 
-    public AppUser(Long telegramId, String username, String firstName, String lastName) {
-        this();
+    public AppUser(Long id, Long telegramId, String username, String firstName, String lastName,
+                   Role role, LocalDateTime registeredAt, LocalDate birthDate, Boolean isActive) {
+        this.id = id;
         this.telegramId = telegramId;
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.role = role;
+        this.registeredAt = registeredAt;
+        this.birthDate = birthDate;
+        this.isActive = isActive;
     }
 
     public AppUser(Long id, Long telegramId, String username, String firstName, String lastName,
@@ -63,6 +69,9 @@ public class AppUser {
 
     public LocalDateTime getRegisteredAt() { return registeredAt; }
     public void setRegisteredAt(LocalDateTime registeredAt) { this.registeredAt = registeredAt; }
+
+    public LocalDate getBirthDate() { return birthDate; }
+    public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
 
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
