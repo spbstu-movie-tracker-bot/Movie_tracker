@@ -1,6 +1,8 @@
 package com.movietracker.model;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+
 
 // User entity with role support
 public class AppUser {
