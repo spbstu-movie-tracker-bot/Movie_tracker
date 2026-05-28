@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(255),
     first_name VARCHAR(255),
     last_name VARCHAR(255),
+    birth_date DATE,
     role VARCHAR(50) DEFAULT 'USER' NOT NULL,
     registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT TRUE

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.time.LocalDate;
 
 // User management service
 @Service
@@ -42,4 +43,10 @@ public class UserService {
     public Mono<Integer> promoteToAdmin(Long userId) {
         return userRepository.updateRole(userId, Role.ADMIN);
     }
+
+    public Mono<Integer> updateBirthDate(Long userId, LocalDate birthDate) {
+        log.info("Updating birth date for userId={}", userId);
+        return userRepository.updateBirthDate(userId, birthDate);
+    }
+
 }
