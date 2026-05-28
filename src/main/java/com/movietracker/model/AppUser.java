@@ -23,6 +23,14 @@ public class AppUser {
         this.isActive = true;
     }
 
+    public AppUser(Long telegramId, String username, String firstName, String lastName) {
+        this();
+        this.telegramId = telegramId;
+        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
     public AppUser(Long id, Long telegramId, String username, String firstName, String lastName,
                    Role role, LocalDateTime registeredAt, LocalDate birthDate, Boolean isActive) {
         this.id = id;
