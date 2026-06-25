@@ -4,11 +4,17 @@ on:
   push:
     branches:
       - main
+      - feature/birthdate-abbad
   workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
     
     steps:
       - name: Checkout code
@@ -18,25 +24,37 @@ jobs:
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.AWS_HOST }}
-          username: ubuntu
+          username: ec2-user
           key: ${{ secrets.AWS_PRIVATE_KEY }}
           source: "src,build.gradle,settings.gradle,Dockerfile,docker-compose.yml,.env.example,gradle"
-          target: "~/"
+          target: "~/movie_tracker_spring7"
 
       - name: Deploy with Docker Compose
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.AWS_HOST }}
-          username: ubuntu
+          username: ec2-user
           key: ${{ secrets.AWS_PRIVATE_KEY }}
           script: |
-            cd ~/
+            cd ~/movie_tracker_spring7
             # Create .env from example if it doesn't exist
             if [ ! -f .env ]; then
               cp .env.example .env
               echo "WARNING: .env created from example - fill in real values!"
             fi
-            # Stop any old containers (from any directory)
-            sudo docker rm -f movie-tracker-spring7 movie-tracker-postgres movie-tracker-rabbitmq 2>/dev/null || true
-            sudo docker compose down --remove-orphans || true
-            sudo docker compose up --build -d
+            # Build and restart only app service to keep DB/RabbitMQ alive
+            docker compose build app
+            docker compose up -d postgres rabbitmq
+            docker compose up -d --no-deps app
+
+            # Basic health check for CI signal
+            for i in {1..20}; do
+              if curl -fsS http://localhost:8080/healthcheck >/dev/null; then
+                echo "Healthcheck passed"
+                exit 0
+              fi
+              sleep 3
+            done
+            echo "Healthcheck failed"
+            docker logs movie-tracker-spring7 --tail 100 || true
+            exit 1
